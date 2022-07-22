@@ -1,0 +1,24 @@
+.page {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+#home-page form > div {
+  display: inline-block;
+  width: 200px;
+}
+
+.nohover {
+  color: inherit;
+}
+
+.nohover:hover {
+  color: #28a745;
+}
+
+.nohover.active {
+  color: #28a745;
+}

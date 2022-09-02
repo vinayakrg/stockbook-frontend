@@ -5,9 +5,20 @@ import Loading from "../components/Loading";
 import { toast } from "react-toastify";
 import { StocksContext } from "../contexts/StocksContext";
 import { UserContext } from "../contexts";
+import {
+  BarChart,
+  Bar,
+  Line,
+  LineChart,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts";
 
 function Stock() {
   const [stock, setStock] = useState();
+  const [stream, setStream] = useState([]);
   const params = useParams();
   const [message, setMessage] = useState(1);
   const { stocks, symbols } = useContext(StocksContext);
@@ -34,6 +45,17 @@ function Stock() {
     for (let s of stocks) {
       if (s.id.toLowerCase() === params.symbol.toLowerCase()) {
         setStock(s);
+        if (
+          stream.length === 0 ||
+          stream[stream.length - 1].price !== parseFloat(s.price.toFixed(2))
+        ) {
+          let newStream = [...stream];
+          newStream.push({
+            name: newStream.length,
+            price: parseFloat(s.price.toFixed(2)),
+          });
+          setStream(newStream);
+        }
       }
     }
   }, [params.symbol, stocks]);
@@ -82,26 +104,51 @@ function Stock() {
         <div style={{ textAlign: "center" }}>
           <h1>{symbols[params.symbol]}</h1>
           {stock ? (
-            <h1
-              style={{
-                color: stock.dir
-                  ? stock.dir === 1
-                    ? "green"
-                    : stock.dir === -1
-                    ? "red"
-                    : ""
-                  : "",
-              }}
-            >
-              {formatPrice(stock.price)}
-              {stock.dir === 1 ? (
-                <i className="ri-arrow-up-line"></i>
-              ) : stock.dir === -1 ? (
-                <i className="ri-arrow-down-line"></i>
-              ) : (
-                ""
-              )}
-            </h1>
+            <>
+              <div>
+                <LineChart width={500} height={300} data={stream}>
+                  <XAxis dataKey="name" />
+                  <YAxis
+                    domain={[
+                      parseFloat(
+                        (
+                          stream[stream.length - 1].price -
+                          stream[stream.length - 1].price * 0.001
+                        ).toFixed(2)
+                      ),
+                      parseFloat(
+                        (
+                          stream[stream.length - 1].price +
+                          stream[stream.length - 1].price * 0.001
+                        ).toFixed(2)
+                      ),
+                    ]}
+                  />
+
+                  <Line type="monotone" dataKey="price" stroke="#8884d8" />
+                </LineChart>
+              </div>
+              <h1
+                style={{
+                  color: stock.dir
+                    ? stock.dir === 1
+                      ? "green"
+                      : stock.dir === -1
+                      ? "red"
+                      : ""
+                    : "",
+                }}
+              >
+                {formatPrice(stock.price)}
+                {stock.dir === 1 ? (
+                  <i className="ri-arrow-up-line"></i>
+                ) : stock.dir === -1 ? (
+                  <i className="ri-arrow-down-line"></i>
+                ) : (
+                  ""
+                )}
+              </h1>
+            </>
           ) : (
             <div>
               {message === 1 || params.symbol === "btc-usd" ? (
